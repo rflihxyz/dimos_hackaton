@@ -1,0 +1,3 @@
+[submodule "packages/dimos"]
+	path = packages/dimos
+	url = https://github.com/dimensionalOS/dimos.git
