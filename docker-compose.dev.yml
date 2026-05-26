@@ -1,0 +1,77 @@
+# Development docker-compose for the Dimos hackathon stack.
+# Usage:
+#   cp .env.example .env
+#   docker compose -f docker-compose.dev.yml up --build
+
+name: dimos-dev
+
+services:
+  backend:
+    build:
+      context: ./packages/api
+      dockerfile: Dockerfile.dev
+      network: host
+    volumes:
+      - ./packages/api:/app
+    ports:
+      - "8000:8000"
+    restart: unless-stopped
+    environment:
+      - PYTHONDONTWRITEBYTECODE=1 # for hot reload
+      - PYTHONUNBUFFERED=1 # for hot reload
+      - ENVIRONMENT=${ENVIRONMENT:-development}
+      - CORS_ALLOW_ORIGINS=${CORS_ALLOW_ORIGINS}
+      - CORS_ALLOW_ORIGIN_REGEX=${CORS_ALLOW_ORIGIN_REGEX}
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_DB=${POSTGRES_DB}
+      - POSTGRES_HOST=${POSTGRES_HOST:-postgres}
+      - POSTGRES_PORT=${POSTGRES_PORT:-5432}
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - backend
+
+  webapp:
+    build:
+      context: ./apps/webapp
+      dockerfile: Dockerfile.dev
+      network: host
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./apps/webapp:/app
+      - /app/node_modules
+    restart: unless-stopped
+    environment:
+      - NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL:-http://localhost:8000}
+      - environment=development
+    networks:
+      - frontend
+      - backend
+
+  postgres:
+    image: postgres:17
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -d $${POSTGRES_DB} -U $${POSTGRES_USER}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    volumes:
+      - pg_data:/var/lib/postgresql/data
+    networks:
+      - backend
+
+volumes:
+  pg_data:
+
+networks:
+  frontend:
+  backend:

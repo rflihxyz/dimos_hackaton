@@ -1,0 +1,13 @@
+venv/
+__pycache__/
+*.pyc
+.DS_Store
+.env
+pg_data/
+packages/playground/
+apps/webapp/node_modules
+packages/api-nest/node_modules
+apps/ui-examples
+**/.pnpm-store
+**/node_modules
+ngrok.yml
