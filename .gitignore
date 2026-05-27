@@ -11,3 +11,4 @@ apps/ui-examples
 **/.pnpm-store
 **/node_modules
 ngrok.yml
+.recipes/

@@ -10,10 +10,15 @@ python = "^3.11"
 fastapi = "^0.115.12"
 uvicorn = "^0.35.0"
 pydantic = {extras = ["email"], version = "^2.11.5"}
-python-multipart = "^0.0.20"
+python-multipart = ">=0.0.26,<1.0.0"
 fastapi-pagination = "^0.13.3"
 structlog = "^25.5.0"
 httpx = "^0.28.1"
+httpx-sse = "^0.4.0"
+pydantic-ai = "^1.103.0"
+sqlalchemy = {extras = ["asyncio"], version = "^2.0.36"}
+asyncpg = "^0.30.0"
+aiofiles = "^24.1.0"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^8.0.0"

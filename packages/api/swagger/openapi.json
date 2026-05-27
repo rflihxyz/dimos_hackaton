@@ -1,0 +1,80 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Dimos API",
+    "description": "Backend API",
+    "version": "0.1.0"
+  },
+  "servers": [
+    {
+      "url": "http://0.0.0.0:8000",
+      "description": "Local development server"
+    }
+  ],
+  "paths": {
+    "/": {
+      "get": {
+        "tags": [
+          "healthchecks"
+        ],
+        "summary": "Read Root",
+        "operationId": "read_root__get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/health": {
+      "get": {
+        "tags": [
+          "healthchecks"
+        ],
+        "summary": "Read Health",
+        "operationId": "read_health_health_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/refresh-openapi": {
+      "get": {
+        "tags": [
+          "healthchecks"
+        ],
+        "summary": "Refresh Openapi",
+        "description": "Manual endpoint to refresh the OpenAPI JSON file",
+        "operationId": "refresh_openapi_refresh_openapi_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "tags": [
+    {
+      "name": "healthchecks",
+      "description": "Healthcheck endpoints"
+    }
+  ]
+}

@@ -10,12 +10,14 @@ from fastapi_pagination import add_pagination
 
 from src.core.logging import setup_logging
 from src.core.middleware import LoggingMiddleware
+from src.db import init_db
 
 setup_logging()
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+    await init_db()
     generate_openapi_json()
     yield
 
@@ -94,10 +96,13 @@ def refresh_openapi():
     return {"message": "OpenAPI JSON file refreshed successfully"}
 
 
-# Register routers below as modules are added under `src/`.
-# Example:
-#   from src import api_keys
-#   app.include_router(api_keys.router)
+from src.agents.router import router as agents_router
+from src.recipes.router import router as recipes_router
+from src.runtime.router import router as runtime_router
+
+app.include_router(recipes_router)
+app.include_router(runtime_router)
+app.include_router(agents_router)
 
 
 if __name__ == "__main__":

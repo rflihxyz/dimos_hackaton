@@ -13,6 +13,7 @@ services:
       network: host
     volumes:
       - ./packages/api:/app
+      - ./.recipes:/recipes
     ports:
       - "8000:8000"
     restart: unless-stopped
@@ -27,6 +28,13 @@ services:
       - POSTGRES_DB=${POSTGRES_DB}
       - POSTGRES_HOST=${POSTGRES_HOST:-postgres}
       - POSTGRES_PORT=${POSTGRES_PORT:-5432}
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - DIMOS_MCP_URL=${DIMOS_MCP_URL:-http://host.docker.internal:9990/mcp}
+      - DIMOS_VIDEO_URL=${DIMOS_VIDEO_URL:-http://host.docker.internal:5555}
+      - NEXT_PUBLIC_DIMOS_MCP_URL=${NEXT_PUBLIC_DIMOS_MCP_URL:-http://localhost:9990/mcp}
+      - RECIPES_DIR=/recipes
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     depends_on:
       postgres:
         condition: service_healthy
@@ -46,6 +54,7 @@ services:
     restart: unless-stopped
     environment:
       - NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL:-http://localhost:8000}
+      - NEXT_PUBLIC_DIMOS_URL=${NEXT_PUBLIC_DIMOS_URL:-http://localhost:5555}
       - environment=development
     networks:
       - frontend
