@@ -53,22 +53,24 @@ export default function NewSkillPage() {
   };
 
   return (
-    <div className="mx-auto flex w-full max-w-3xl flex-col gap-6 p-6">
-      <div className="flex items-center gap-2">
-        <Button asChild variant="ghost" size="icon">
-          <Link href="/">
-            <ArrowLeft className="h-4 w-4" />
-            <span className="sr-only">Back</span>
-          </Link>
-        </Button>
-        <div>
-          <h1 className="text-xl font-semibold tracking-tight">
-            Teach a new skill
-          </h1>
-          <p className="text-sm text-muted-foreground">
-            Describe what the robot should look out for. GPT-5.5 will
-            synthesise a recipe; you confirm before shipping.
-          </p>
+    <div className="w-full space-y-6 px-4 py-6 sm:px-6 lg:px-8">
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <Button asChild variant="ghost" size="icon">
+            <Link href="/">
+              <ArrowLeft className="h-4 w-4" />
+              <span className="sr-only">Back</span>
+            </Link>
+          </Button>
+          <div>
+            <h1 className="text-3xl font-bold tracking-tight">
+              Teach a new skill
+            </h1>
+            <p className="text-muted-foreground">
+              Describe what the robot should look out for. GPT-5.5 will
+              synthesise a recipe; you confirm before shipping.
+            </p>
+          </div>
         </div>
       </div>
 

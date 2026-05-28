@@ -1,4 +1,5 @@
 import json
+import logging
 import os
 from contextlib import asynccontextmanager
 
@@ -10,14 +11,42 @@ from fastapi_pagination import add_pagination
 
 from src.core.logging import setup_logging
 from src.core.middleware import LoggingMiddleware
-from src.db import init_db
+from src.db import SessionLocal, init_db
+from src.dimos_client import get_mcp_adapter
 
 setup_logging()
+log = logging.getLogger(__name__)
+
+
+async def _best_effort_mcp_sync() -> None:
+    """Try once to sync the MCP tool catalog. Never fail the broker.
+
+    DimOS lives on the host and may not be up when the broker boots.
+    Operators can refresh on demand via ``POST /mcp/tools/sync``.
+    """
+    from src.mcp_tools import service as mcp_tools_service
+
+    adapter = get_mcp_adapter()
+    if not await adapter.wait_for_ready(timeout=0.5):
+        log.info("startup_mcp_sync_skipped_dimos_down")
+        return
+    try:
+        async with SessionLocal() as session:
+            result = await mcp_tools_service.sync_from_mcp(session, adapter)
+        log.info(
+            "startup_mcp_sync_ok upserted=%d deleted=%d skipped=%s",
+            result.upserted,
+            result.deleted,
+            result.skipped,
+        )
+    except Exception as e:
+        log.warning("startup_mcp_sync_failed error=%s", e)
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     await init_db()
+    await _best_effort_mcp_sync()
     generate_openapi_json()
     yield
 
@@ -97,12 +126,20 @@ def refresh_openapi():
 
 
 from src.agents.router import router as agents_router
+from src.mcp_tools.router import router as mcp_tools_router
+from src.rbac.router import router as rbac_router
 from src.recipes.router import router as recipes_router
+from src.roles.router import router as roles_router
 from src.runtime.router import router as runtime_router
+from src.users.router import router as users_router
 
 app.include_router(recipes_router)
 app.include_router(runtime_router)
 app.include_router(agents_router)
+app.include_router(mcp_tools_router)
+app.include_router(rbac_router)
+app.include_router(roles_router)
+app.include_router(users_router)
 
 
 if __name__ == "__main__":

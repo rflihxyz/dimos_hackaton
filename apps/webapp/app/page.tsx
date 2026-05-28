@@ -1,38 +1,29 @@
 import Link from "next/link";
 
-import { AgentChat } from "@/components/agent-chat";
-import { RecipeList } from "@/components/recipe-list";
-import { VideoPanel } from "@/components/video-panel";
+import { UsersList } from "@/components/users-list";
 import { Button } from "@/components/ui/button";
 
 export default function Home() {
   return (
-    <div className="flex min-h-svh flex-col bg-background">
-      <header className="flex items-center justify-between border-b px-6 py-4">
+    <div className="w-full space-y-6 px-4 py-6 sm:px-6 lg:px-8">
+      <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-lg font-semibold tracking-tight">
-            Dimos Learned Skills
-          </h1>
-          <p className="text-xs text-muted-foreground">
-            Teach the robot something new in plain English.
+          <h1 className="text-3xl font-bold tracking-tight">Dimos Access</h1>
+          <p className="text-muted-foreground">
+            Manage who the robot recognises and what they can ask it to do.
           </p>
         </div>
-        <Button asChild>
-          <Link href="/skills/new">Teach a skill</Link>
-        </Button>
-      </header>
+        <div className="flex gap-2">
+          <Button asChild variant="outline">
+            <Link href="/roles">Manage roles</Link>
+          </Button>
+          <Button asChild>
+            <Link href="/users/new">Add person</Link>
+          </Button>
+        </div>
+      </div>
 
-      <main className="grid flex-1 gap-4 p-4 md:grid-cols-3 md:p-6">
-        <section className="md:col-span-2">
-          <VideoPanel />
-        </section>
-        <section className="md:row-span-2 min-h-[420px] md:min-h-0">
-          <RecipeList />
-        </section>
-        <section className="md:col-span-2 min-h-[360px]">
-          <AgentChat />
-        </section>
-      </main>
+      <UsersList />
     </div>
   );
 }

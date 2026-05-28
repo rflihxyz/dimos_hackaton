@@ -19,6 +19,7 @@ pydantic-ai = "^1.103.0"
 sqlalchemy = {extras = ["asyncio"], version = "^2.0.36"}
 asyncpg = "^0.30.0"
 aiofiles = "^24.1.0"
+exa-py = "^2.13.0"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^8.0.0"

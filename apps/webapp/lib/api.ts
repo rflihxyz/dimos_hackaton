@@ -43,6 +43,91 @@ export interface AgentStatus {
   error?: string;
 }
 
+/**
+ * The fixed set of action categories used to *group* skills in the UI.
+ * Mirrors `ActionCategory` in `packages/api/src/rbac/taxonomy.py` —
+ * note that categories are no longer valid permission tokens themselves;
+ * permissions are MCP skill names (or `"*"`).
+ */
+export type ActionCategory = "observe" | "watch" | "move" | "speak";
+
+/**
+ * One entry from `GET /rbac/taxonomy`.
+ */
+export interface CategoryInfo {
+  name: ActionCategory;
+  label: string;
+  description: string;
+  examples: string[];
+  skills: string[];
+}
+
+export interface Taxonomy {
+  wildcard: string;
+  categories: CategoryInfo[];
+  always_allowed_skills: string[];
+}
+
+export interface RoleRow {
+  name: string;
+  /** MCP skill names (sourced from `mcp_tools`), or `["*"]` for full access. */
+  permissions: string[];
+}
+
+export interface RoleCreate {
+  name: string;
+  permissions: string[];
+}
+
+export interface RolePatch {
+  permissions: string[];
+}
+
+export interface McpTool {
+  name: string;
+  description: string | null;
+  input_schema: Record<string, unknown> | null;
+  first_seen_at: string;
+  last_seen_at: string;
+  category: ActionCategory | null;
+  is_always_allowed: boolean;
+  is_categorized: boolean;
+}
+
+export interface McpToolListResponse {
+  items: McpTool[];
+  total: number;
+  last_synced_at: string | null;
+  uncategorized_count: number;
+}
+
+export interface McpSyncResponse {
+  upserted: number;
+  deleted: number;
+  last_synced_at: string;
+  skipped: boolean;
+}
+
+export interface UserRow {
+  username: string;
+  full_name: string;
+  role: string;
+  has_face_image: boolean;
+  has_face_embedding: boolean;
+  created_at: string;
+}
+
+export interface UserCreate {
+  username: string;
+  full_name: string;
+  role: string;
+}
+
+export interface UserPatch {
+  full_name?: string;
+  role?: string;
+}
+
 const API_BASE =
   process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
 
@@ -101,4 +186,69 @@ export const api = {
       `/recipes/${name}/invoke`,
       { method: "POST" },
     ),
+
+  getTaxonomy: () => request<Taxonomy>("/rbac/taxonomy"),
+
+  listMcpTools: () => request<McpToolListResponse>("/mcp/tools"),
+  syncMcpTools: () =>
+    request<McpSyncResponse>("/mcp/tools/sync", { method: "POST" }),
+
+  listRoles: () => request<RoleRow[]>("/roles"),
+  getRole: (name: string) => request<RoleRow>(`/roles/${name}`),
+  createRole: (body: RoleCreate) =>
+    request<RoleRow>("/roles", {
+      method: "POST",
+      body: JSON.stringify(body),
+    }),
+  updateRole: (name: string, patch: RolePatch) =>
+    request<RoleRow>(`/roles/${name}`, {
+      method: "PATCH",
+      body: JSON.stringify(patch),
+    }),
+  deleteRole: (name: string) =>
+    request<void>(`/roles/${name}`, { method: "DELETE" }),
+
+  listUsers: () => request<UserRow[]>("/users"),
+  getUser: (username: string) => request<UserRow>(`/users/${username}`),
+  createUser: (body: UserCreate) =>
+    request<UserRow>("/users", {
+      method: "POST",
+      body: JSON.stringify(body),
+    }),
+  updateUser: (username: string, patch: UserPatch) =>
+    request<UserRow>(`/users/${username}`, {
+      method: "PATCH",
+      body: JSON.stringify(patch),
+    }),
+  deleteUser: (username: string) =>
+    request<void>(`/users/${username}`, { method: "DELETE" }),
+
+  /**
+   * Multipart upload — must NOT set Content-Type manually so the browser
+   * adds the multipart boundary.
+   */
+  uploadUserFace: async (username: string, blob: Blob): Promise<UserRow> => {
+    const form = new FormData();
+    const filename = blob.type === "image/png" ? "face.png" : "face.jpg";
+    form.append("file", blob, filename);
+    const res = await fetch(`${API_BASE}/users/${username}/face`, {
+      method: "POST",
+      body: form,
+      cache: "no-store",
+    });
+    if (!res.ok) {
+      let detail: string | undefined;
+      try {
+        const body = await res.json();
+        detail = body?.detail ?? JSON.stringify(body);
+      } catch {
+        detail = await res.text();
+      }
+      throw new Error(`${res.status} ${res.statusText}: ${detail ?? "(no body)"}`);
+    }
+    return res.json() as Promise<UserRow>;
+  },
+
+  faceImageUrl: (username: string) =>
+    `${API_BASE}/users/${username}/face?ts=${Date.now()}`,
 };
