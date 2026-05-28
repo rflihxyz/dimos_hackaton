@@ -14,6 +14,7 @@ services:
     volumes:
       - ./packages/api:/app
       - ./.recipes:/recipes
+      - ./.faces:/faces
     ports:
       - "8000:8000"
     restart: unless-stopped
@@ -26,6 +27,7 @@ services:
       - POSTGRES_USER=${POSTGRES_USER}
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
       - POSTGRES_DB=${POSTGRES_DB}
+      - EXA_API_KEY=${EXA_API_KEY}
       - POSTGRES_HOST=${POSTGRES_HOST:-postgres}
       - POSTGRES_PORT=${POSTGRES_PORT:-5432}
       - OPENAI_API_KEY=${OPENAI_API_KEY}
@@ -33,6 +35,7 @@ services:
       - DIMOS_VIDEO_URL=${DIMOS_VIDEO_URL:-http://host.docker.internal:5555}
       - NEXT_PUBLIC_DIMOS_MCP_URL=${NEXT_PUBLIC_DIMOS_MCP_URL:-http://localhost:9990/mcp}
       - RECIPES_DIR=/recipes
+      - FACES_DIR=/faces
     extra_hosts:
       - "host.docker.internal:host-gateway"
     depends_on:
@@ -74,7 +77,8 @@ services:
       timeout: 5s
       retries: 5
     volumes:
-      - pg_data:/var/lib/postgresql/data
+      - ./pg_data:/var/lib/postgresql/data
+      - ./packages/api/scripts/init.sql:/docker-entrypoint-initdb.d/01-rbac.sql:ro
     networks:
       - backend
 

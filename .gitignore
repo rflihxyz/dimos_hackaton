@@ -12,3 +12,4 @@ apps/ui-examples
 **/node_modules
 ngrok.yml
 .recipes/
+.faces/
