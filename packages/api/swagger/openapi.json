@@ -178,6 +178,25 @@
         ]
       }
     },
+    "/mcp": {
+      "post": {
+        "tags": [
+          "mcp-gateway"
+        ],
+        "summary": "Mcp Proxy",
+        "operationId": "mcp_proxy_mcp_post",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    },
     "/recipes": {
       "get": {
         "tags": [
@@ -515,9 +534,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "additionalProperties": true,
-                  "type": "object",
-                  "title": "Response Agent Send Agents Send Post"
+                  "$ref": "#/components/schemas/AgentSendResponse"
                 }
               }
             }
@@ -529,31 +546,6 @@
                 "schema": {
                   "$ref": "#/components/schemas/HTTPValidationError"
                 }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "HTTPBearer": []
-          }
-        ]
-      }
-    },
-    "/agents/stream": {
-      "get": {
-        "tags": [
-          "agents"
-        ],
-        "summary": "Agent Stream",
-        "description": "Server-Sent Events proxy of dimos's MCP SSE channel.\n\nThe browser could hit `dimos:9990` directly, but proxying through the\nbroker gives us a single CORS-friendly origin and lets us add request\nlogging.",
-        "operationId": "agent_stream_agents_stream_get",
-        "responses": {
-          "200": {
-            "description": "Successful Response",
-            "content": {
-              "application/json": {
-                "schema": {}
               }
             }
           }
@@ -1537,6 +1529,32 @@
           "message"
         ],
         "title": "AgentSendRequest"
+      },
+      "AgentSendResponse": {
+        "properties": {
+          "status": {
+            "type": "string",
+            "title": "Status"
+          },
+          "ack": {
+            "type": "string",
+            "title": "Ack"
+          },
+          "events": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Events"
+          }
+        },
+        "type": "object",
+        "required": [
+          "status",
+          "ack",
+          "events"
+        ],
+        "title": "AgentSendResponse"
       },
       "Body_upload_face_users__username__face_post": {
         "properties": {

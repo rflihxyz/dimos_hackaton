@@ -128,6 +128,7 @@ def refresh_openapi():
 from src.agents.router import router as agents_router
 from src.auth.jwt import get_current_user
 from src.auth.router import router as auth_router
+from src.mcp_gateway.router import router as mcp_gateway_router
 from src.mcp_tools.router import router as mcp_tools_router
 from src.policies.router import router as policies_router
 from src.rbac.router import router as rbac_router
@@ -139,6 +140,11 @@ from src.users.router import router as users_router
 # /auth/* is the entry point; signup + login are public, and /auth/me
 # guards itself via Depends(get_current_user).
 app.include_router(auth_router)
+
+# The MCP gateway is callable by dimos's McpClient from outside the
+# broker process. It carries no user JWT — gating relies on the active-
+# turn state set by the dispatcher (see src/mcp_gateway/session.py).
+app.include_router(mcp_gateway_router)
 
 # Everything else requires a valid bearer token. Adding the dependency
 # at include time avoids touching each router individually.

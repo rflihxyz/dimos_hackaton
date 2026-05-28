@@ -43,6 +43,18 @@ export interface AgentStatus {
   error?: string;
 }
 
+export interface AgentSendResponse {
+  status: string;
+  /** Synchronous acknowledgement string returned by dimos's `agent_send`. */
+  ack: string;
+  /**
+   * One line per gated tool call the agent made during this turn. Lines
+   * start with `allow`, `deny (rbac)`, or `deny (policy)`. Empty when
+   * the agent didn't call any tools.
+   */
+  events: string[];
+}
+
 /**
  * The fixed set of action categories used to *group* skills in the UI.
  * Mirrors `ActionCategory` in `packages/api/src/rbac/taxonomy.py` —
@@ -369,7 +381,7 @@ export const api = {
   getRuntime: () => request<RuntimeInfo>("/runtime"),
   getAgentStatus: () => request<AgentStatus>("/agents/status"),
   sendAgentMessage: (message: string) =>
-    request<{ status: string; response: string }>("/agents/send", {
+    request<AgentSendResponse>("/agents/send", {
       method: "POST",
       body: JSON.stringify({ message }),
     }),

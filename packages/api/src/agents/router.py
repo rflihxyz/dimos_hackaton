@@ -1,22 +1,31 @@
-"""Agent chat endpoints (thin MCP proxies)."""
+"""Agent chat endpoints.
+
+``POST /agents/send`` is the only path the chat UI uses. It serialises
+turns through the dispatcher so the MCP gateway can attribute every
+``tools/call`` to a specific user (see ``src/mcp_gateway``).
+"""
 from __future__ import annotations
 
-from collections.abc import AsyncIterator
-import json
-import uuid
-
-from fastapi import APIRouter, HTTPException, status
-from fastapi.responses import StreamingResponse
-import httpx
+from fastapi import APIRouter, Depends, HTTPException, status
 from pydantic import BaseModel, Field
 
-from src.dimos_client import get_mcp_adapter, get_mcp_sse_url
+from src.agents import dispatcher as agents_dispatcher
+from src.auth.jwt import get_current_user
+from src.dimos_client import get_mcp_adapter
+from src.mcp_gateway.session import ActiveUser
+from src.rbac.db_models import User
 
 router = APIRouter(prefix="/agents", tags=["agents"])
 
 
 class AgentSendRequest(BaseModel):
     message: str = Field(min_length=1, max_length=4096)
+
+
+class AgentSendResponse(BaseModel):
+    status: str
+    ack: str
+    events: list[str]
 
 
 @router.get("/status")
@@ -38,56 +47,21 @@ async def agent_status() -> dict:
     }
 
 
-@router.post("/send")
-async def agent_send(body: AgentSendRequest) -> dict:
-    adapter = get_mcp_adapter()
+@router.post("/send", response_model=AgentSendResponse)
+async def agent_send(
+    body: AgentSendRequest,
+    user: User = Depends(get_current_user),
+) -> AgentSendResponse:
+    active = ActiveUser(
+        user_id=str(user.id),
+        username=user.username,
+        role=user.role,
+    )
     try:
-        text = await adapter.call_tool_text(
-            "agent_send", arguments={"message": body.message}
-        )
+        result = await agents_dispatcher.submit(active, body.message)
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_502_BAD_GATEWAY,
             detail=f"dimos unreachable: {e}",
         ) from e
-    return {"status": "sent", "response": text}
-
-
-@router.get("/stream")
-async def agent_stream() -> StreamingResponse:
-    """Server-Sent Events proxy of dimos's MCP SSE channel.
-
-    The browser could hit `dimos:9990` directly, but proxying through the
-    broker gives us a single CORS-friendly origin and lets us add request
-    logging.
-    """
-    mcp_url = get_mcp_sse_url()
-
-    async def event_stream() -> AsyncIterator[bytes]:
-        payload = {
-            "jsonrpc": "2.0",
-            "id": str(uuid.uuid4()),
-            "method": "notifications/subscribe",
-        }
-        async with httpx.AsyncClient(timeout=None) as client:
-            try:
-                async with client.stream(
-                    "GET",
-                    mcp_url,
-                    headers={"Accept": "text/event-stream"},
-                ) as response:
-                    async for chunk in response.aiter_bytes():
-                        yield chunk
-            except httpx.HTTPError as e:
-                err = {"error": str(e)}
-                yield f"event: error\ndata: {json.dumps(err)}\n\n".encode()
-
-    return StreamingResponse(
-        event_stream(),
-        media_type="text/event-stream",
-        headers={
-            "Cache-Control": "no-cache",
-            "X-Accel-Buffering": "no",
-            "Connection": "keep-alive",
-        },
-    )
+    return AgentSendResponse(status="sent", ack=result.ack, events=result.events)

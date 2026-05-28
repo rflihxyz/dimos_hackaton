@@ -17,3 +17,7 @@ export function videoUrl(): string {
 export function agentSseUrl(): string {
   return `${DIMOS_BASE}/text_stream/agent_responses`;
 }
+
+export function agentIdleSseUrl(): string {
+  return `${DIMOS_BASE}/text_stream/agent_idle`;
+}

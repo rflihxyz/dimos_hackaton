@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Bot, ShieldAlert, Shield, Users } from "lucide-react";
+import { Bot, MessageSquare, ShieldAlert, Shield, Users } from "lucide-react";
 
 import {
   Sidebar,
@@ -18,6 +18,12 @@ import {
 } from "@/components/ui/sidebar";
 
 const navItems = [
+  {
+    title: "Chat",
+    href: "/chat",
+    icon: MessageSquare,
+    isActive: (pathname: string) => pathname.startsWith("/chat"),
+  },
   {
     title: "Users",
     href: "/",
