@@ -121,6 +121,8 @@ export interface UserCreate {
   username: string;
   full_name: string;
   role: string;
+  email: string;
+  password: string;
 }
 
 export interface UserPatch {
@@ -128,30 +130,222 @@ export interface UserPatch {
   role?: string;
 }
 
+// ----- Policies -----
+
+export type SignalKind = "number" | "bool" | "enum" | "string";
+export type SignalSource = "sensor" | "vla_recipe" | "time" | "user_context";
+export type PolicyOperator =
+  | "=="
+  | "!="
+  | "<"
+  | "<="
+  | ">"
+  | ">="
+  | "in"
+  | "not_in";
+export type ScopeKind = "all" | "categories" | "skills";
+
+export interface SignalInfo {
+  name: string;
+  kind: SignalKind;
+  source: SignalSource;
+  description: string;
+  unit: string | null;
+  enum_values: string[] | null;
+  default_when_missing: unknown;
+}
+
+export interface SignalCatalogResponse {
+  signals: SignalInfo[];
+  operators: PolicyOperator[];
+}
+
+export interface Predicate {
+  signal: string;
+  op: PolicyOperator;
+  value: unknown;
+}
+
+/** Top-level: exactly one of `all_of` / `any_of` is set. */
+export interface Condition {
+  all_of?: Predicate[];
+  any_of?: Predicate[];
+}
+
+export interface PolicyRow {
+  id: number;
+  name: string;
+  description: string | null;
+  enabled: boolean;
+  scope_kind: ScopeKind;
+  scope_values: string[];
+  applies_to_roles: string[];
+  condition: Condition;
+  message: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface PolicyCreate {
+  name: string;
+  description?: string | null;
+  enabled?: boolean;
+  scope_kind: ScopeKind;
+  scope_values: string[];
+  applies_to_roles: string[];
+  condition: Condition;
+  message?: string | null;
+}
+
+export interface PolicyPatch {
+  description?: string | null;
+  enabled?: boolean;
+  scope_kind?: ScopeKind;
+  scope_values?: string[];
+  applies_to_roles?: string[];
+  condition?: Condition;
+  message?: string | null;
+}
+
+export interface EvaluateRequest {
+  skill: string;
+  role?: string | null;
+  signals: Record<string, unknown>;
+}
+
+export interface PolicyMatch {
+  policy_id: number;
+  policy_name: string;
+  message: string | null;
+}
+
+export interface EvaluateResponse {
+  decision: "allow" | "deny";
+  matched: PolicyMatch[];
+}
+
 const API_BASE =
   process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
+
+// ----- Auth types -----
+
+export interface UserAuth {
+  id: string;
+  email: string;
+  username: string;
+  full_name: string;
+  role: string;
+}
+
+export interface LoginResponse {
+  access_token: string;
+  token_type: string;
+  user: UserAuth;
+}
+
+export interface SignupRequest {
+  email: string;
+  password: string;
+  full_name: string;
+}
+
+export interface LoginRequest {
+  email: string;
+  password: string;
+}
+
+// ----- Auth token storage (localStorage; SSR-safe) -----
+
+const TOKEN_KEY = "auth_token";
+const TOKEN_TYPE_KEY = "token_type";
+const USER_KEY = "auth_user";
+
+function isBrowser(): boolean {
+  return typeof window !== "undefined";
+}
+
+export function getAuthToken(): string | null {
+  if (!isBrowser()) return null;
+  return window.localStorage.getItem(TOKEN_KEY);
+}
+
+export function getStoredUser(): UserAuth | null {
+  if (!isBrowser()) return null;
+  const raw = window.localStorage.getItem(USER_KEY);
+  if (!raw) return null;
+  try {
+    return JSON.parse(raw) as UserAuth;
+  } catch {
+    return null;
+  }
+}
+
+export function saveAuth(res: LoginResponse): void {
+  if (!isBrowser()) return;
+  window.localStorage.setItem(TOKEN_KEY, res.access_token);
+  window.localStorage.setItem(TOKEN_TYPE_KEY, res.token_type);
+  window.localStorage.setItem(USER_KEY, JSON.stringify(res.user));
+}
+
+export function clearAuth(): void {
+  if (!isBrowser()) return;
+  window.localStorage.removeItem(TOKEN_KEY);
+  window.localStorage.removeItem(TOKEN_TYPE_KEY);
+  window.localStorage.removeItem(USER_KEY);
+}
+
+/** Thrown on non-2xx responses; carries the raw status + parsed detail. */
+export class ApiError extends Error {
+  status: number;
+  detail: unknown;
+  constructor(status: number, statusText: string, detail: unknown) {
+    super(
+      typeof detail === "string"
+        ? `${status} ${statusText}: ${detail}`
+        : `${status} ${statusText}`,
+    );
+    this.status = status;
+    this.detail = detail;
+  }
+}
 
 async function request<T>(
   path: string,
   init: RequestInit = {},
 ): Promise<T> {
+  const token = getAuthToken();
+  const headers: Record<string, string> = {
+    "Content-Type": "application/json",
+    ...((init.headers as Record<string, string>) ?? {}),
+  };
+  if (token) {
+    headers["Authorization"] = `Bearer ${token}`;
+  }
+
   const res = await fetch(`${API_BASE}${path}`, {
     ...init,
-    headers: {
-      "Content-Type": "application/json",
-      ...(init.headers ?? {}),
-    },
+    headers,
     cache: "no-store",
   });
   if (!res.ok) {
-    let detail: string | undefined;
+    let parsed: unknown;
+    let detailStr: string | undefined;
     try {
-      const body = await res.json();
-      detail = body?.detail ?? JSON.stringify(body);
+      parsed = await res.json();
+      const d = (parsed as { detail?: unknown })?.detail;
+      detailStr = typeof d === "string" ? d : JSON.stringify(parsed);
     } catch {
-      detail = await res.text();
+      detailStr = await res.text();
+      parsed = detailStr;
     }
-    throw new Error(`${res.status} ${res.statusText}: ${detail ?? "(no body)"}`);
+
+    // A 401 from anywhere means our token is stale; nuke it so the
+    // AuthProvider can redirect to /login on the next render.
+    if (res.status === 401) {
+      clearAuth();
+    }
+
+    throw new ApiError(res.status, res.statusText, parsed ?? detailStr);
   }
   if (res.status === 204) {
     return undefined as T;
@@ -160,6 +354,18 @@ async function request<T>(
 }
 
 export const api = {
+  signup: (body: SignupRequest) =>
+    request<UserAuth>("/auth/signup", {
+      method: "POST",
+      body: JSON.stringify(body),
+    }),
+  login: (body: LoginRequest) =>
+    request<LoginResponse>("/auth/login", {
+      method: "POST",
+      body: JSON.stringify(body),
+    }),
+  me: () => request<UserAuth>("/auth/me"),
+
   getRuntime: () => request<RuntimeInfo>("/runtime"),
   getAgentStatus: () => request<AgentStatus>("/agents/status"),
   sendAgentMessage: (message: string) =>
@@ -223,6 +429,27 @@ export const api = {
   deleteUser: (username: string) =>
     request<void>(`/users/${username}`, { method: "DELETE" }),
 
+  listSignals: () => request<SignalCatalogResponse>("/policies/signals"),
+  listPolicies: () => request<PolicyRow[]>("/policies"),
+  getPolicy: (id: number) => request<PolicyRow>(`/policies/${id}`),
+  createPolicy: (body: PolicyCreate) =>
+    request<PolicyRow>("/policies", {
+      method: "POST",
+      body: JSON.stringify(body),
+    }),
+  updatePolicy: (id: number, patch: PolicyPatch) =>
+    request<PolicyRow>(`/policies/${id}`, {
+      method: "PATCH",
+      body: JSON.stringify(patch),
+    }),
+  deletePolicy: (id: number) =>
+    request<void>(`/policies/${id}`, { method: "DELETE" }),
+  evaluatePolicies: (body: EvaluateRequest) =>
+    request<EvaluateResponse>("/policies/evaluate", {
+      method: "POST",
+      body: JSON.stringify(body),
+    }),
+
   /**
    * Multipart upload — must NOT set Content-Type manually so the browser
    * adds the multipart boundary.
@@ -231,20 +458,28 @@ export const api = {
     const form = new FormData();
     const filename = blob.type === "image/png" ? "face.png" : "face.jpg";
     form.append("file", blob, filename);
+    const token = getAuthToken();
+    const headers: Record<string, string> = {};
+    if (token) headers["Authorization"] = `Bearer ${token}`;
     const res = await fetch(`${API_BASE}/users/${username}/face`, {
       method: "POST",
       body: form,
       cache: "no-store",
+      headers,
     });
     if (!res.ok) {
-      let detail: string | undefined;
+      if (res.status === 401) clearAuth();
+      let parsed: unknown;
+      let detailStr: string | undefined;
       try {
-        const body = await res.json();
-        detail = body?.detail ?? JSON.stringify(body);
+        parsed = await res.json();
+        const d = (parsed as { detail?: unknown })?.detail;
+        detailStr = typeof d === "string" ? d : JSON.stringify(parsed);
       } catch {
-        detail = await res.text();
+        detailStr = await res.text();
+        parsed = detailStr;
       }
-      throw new Error(`${res.status} ${res.statusText}: ${detail ?? "(no body)"}`);
+      throw new ApiError(res.status, res.statusText, parsed ?? detailStr);
     }
     return res.json() as Promise<UserRow>;
   },

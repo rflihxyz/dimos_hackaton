@@ -5,19 +5,26 @@ from datetime import datetime
 import re
 from typing import Annotated
 
-from pydantic import BaseModel, ConfigDict, Field, field_validator
+from pydantic import BaseModel, ConfigDict, EmailStr, Field, field_validator
 
 USERNAME_PATTERN = re.compile(r"^[a-z0-9_]{1,32}$")
 
 
 class UserCreate(BaseModel):
-    """Body for `POST /users` (no face image — that's a separate upload)."""
+    """Body for `POST /users` (no face image — that's a separate upload).
+
+    The users table is also used for auth, so email + password are required.
+    Prefer ``POST /auth/signup`` for self-service registration; this admin
+    endpoint exists for operators creating users with a specific role.
+    """
 
     model_config = ConfigDict(extra="forbid")
 
     username: Annotated[str, Field(min_length=1, max_length=32)]
     full_name: Annotated[str, Field(min_length=1, max_length=128)]
     role: Annotated[str, Field(min_length=1, max_length=32)]
+    email: EmailStr
+    password: Annotated[str, Field(min_length=8, max_length=128)]
 
     @field_validator("username")
     @classmethod

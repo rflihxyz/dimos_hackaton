@@ -7,9 +7,10 @@ this file only provides ORM access.
 from __future__ import annotations
 
 from datetime import datetime
+import uuid
 
 from sqlalchemy import REAL, DateTime, ForeignKey, String, func
-from sqlalchemy.dialects.postgresql import ARRAY
+from sqlalchemy.dialects.postgresql import ARRAY, UUID
 from sqlalchemy.orm import Mapped, mapped_column
 
 from src.db import RbacBase
@@ -30,7 +31,15 @@ class Role(RbacBase):
 class User(RbacBase):
     __tablename__ = "users"
 
-    username: Mapped[str] = mapped_column(String, primary_key=True)
+    id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), primary_key=True, server_default=func.gen_random_uuid()
+    )
+    # Login identity. Lower-cased by the API before insert.
+    email: Mapped[str] = mapped_column(String, nullable=False, unique=True, index=True)
+    # Bcrypt hash (60 chars).
+    password: Mapped[str] = mapped_column(String, nullable=False)
+    # Legacy RBAC handle, used by /users/{username}/face etc.
+    username: Mapped[str] = mapped_column(String, nullable=False, unique=True)
     full_name: Mapped[str] = mapped_column(String, nullable=False)
     role: Mapped[str] = mapped_column(
         ForeignKey("roles.name", onupdate="CASCADE"), nullable=False, index=True

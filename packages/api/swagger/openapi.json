@@ -70,6 +70,114 @@
         }
       }
     },
+    "/auth/signup": {
+      "post": {
+        "tags": [
+          "auth"
+        ],
+        "summary": "Signup",
+        "operationId": "signup_auth_signup_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UserSignup"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserAuth"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/auth/login": {
+      "post": {
+        "tags": [
+          "auth"
+        ],
+        "summary": "Login",
+        "operationId": "login_auth_login_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UserLogin"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LoginResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/auth/me": {
+      "get": {
+        "tags": [
+          "auth"
+        ],
+        "summary": "Me",
+        "operationId": "me_auth_me_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserAuth"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
     "/recipes": {
       "get": {
         "tags": [
@@ -92,7 +200,12 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
       },
       "post": {
         "tags": [
@@ -131,7 +244,12 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
       }
     },
     "/recipes/draft": {
@@ -172,7 +290,12 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
       }
     },
     "/recipes/{name}": {
@@ -182,6 +305,11 @@
         ],
         "summary": "Get Recipe",
         "operationId": "get_recipe_recipes__name__get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
         "parameters": [
           {
             "name": "name",
@@ -222,6 +350,11 @@
         ],
         "summary": "Delete Recipe",
         "operationId": "delete_recipe_recipes__name__delete",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
         "parameters": [
           {
             "name": "name",
@@ -263,6 +396,11 @@
         "summary": "Invoke Recipe",
         "description": "Tell the running agent to use this learned skill.\n\nUses the chat-driven path (`agent_send`) so the LLM stays in the loop\nand emits progress on the SSE stream.",
         "operationId": "invoke_recipe_recipes__name__invoke_post",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
         "parameters": [
           {
             "name": "name",
@@ -318,7 +456,12 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
       }
     },
     "/agents/status": {
@@ -341,7 +484,12 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
       }
     },
     "/agents/send": {
@@ -384,7 +532,12 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
       }
     },
     "/agents/stream": {
@@ -404,7 +557,12 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
       }
     },
     "/mcp/tools": {
@@ -426,7 +584,12 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
       }
     },
     "/mcp/tools/sync": {
@@ -448,7 +611,12 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
       }
     },
     "/rbac/taxonomy": {
@@ -469,7 +637,12 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
       }
     },
     "/roles": {
@@ -494,7 +667,12 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
       },
       "post": {
         "tags": [
@@ -533,7 +711,12 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
       }
     },
     "/roles/{name}": {
@@ -543,6 +726,11 @@
         ],
         "summary": "Get Role",
         "operationId": "get_role_roles__name__get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
         "parameters": [
           {
             "name": "name",
@@ -583,6 +771,11 @@
         ],
         "summary": "Update Role",
         "operationId": "update_role_roles__name__patch",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
         "parameters": [
           {
             "name": "name",
@@ -633,6 +826,11 @@
         ],
         "summary": "Delete Role",
         "operationId": "delete_role_roles__name__delete",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
         "parameters": [
           {
             "name": "name",
@@ -688,7 +886,12 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
       },
       "post": {
         "tags": [
@@ -727,7 +930,12 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
       }
     },
     "/users/{username}": {
@@ -737,6 +945,11 @@
         ],
         "summary": "Get User",
         "operationId": "get_user_users__username__get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
         "parameters": [
           {
             "name": "username",
@@ -777,6 +990,11 @@
         ],
         "summary": "Update User",
         "operationId": "update_user_users__username__patch",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
         "parameters": [
           {
             "name": "username",
@@ -827,6 +1045,11 @@
         ],
         "summary": "Delete User",
         "operationId": "delete_user_users__username__delete",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
         "parameters": [
           {
             "name": "username",
@@ -868,6 +1091,11 @@
         "summary": "Upload Face",
         "description": "Replace the user's face image. Resets the cached embedding.",
         "operationId": "upload_face_users__username__face_post",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
         "parameters": [
           {
             "name": "username",
@@ -918,6 +1146,11 @@
         ],
         "summary": "Get Face",
         "operationId": "get_face_users__username__face_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
         "parameters": [
           {
             "name": "username",
@@ -956,6 +1189,11 @@
         ],
         "summary": "Delete Face",
         "operationId": "delete_face_users__username__face_delete",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
         "parameters": [
           {
             "name": "username",
@@ -987,6 +1225,299 @@
             }
           }
         }
+      }
+    },
+    "/policies/signals": {
+      "get": {
+        "tags": [
+          "policies"
+        ],
+        "summary": "List Signals",
+        "description": "Return the static catalog of contextual signals + valid operators.\n\nCode-defined (not a DB read); cheap, no async needed.",
+        "operationId": "list_signals_policies_signals_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SignalCatalogResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
+    "/policies": {
+      "get": {
+        "tags": [
+          "policies"
+        ],
+        "summary": "List Policies",
+        "operationId": "list_policies_policies_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/PolicyRow"
+                  },
+                  "type": "array",
+                  "title": "Response List Policies Policies Get"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      },
+      "post": {
+        "tags": [
+          "policies"
+        ],
+        "summary": "Create Policy",
+        "operationId": "create_policy_policies_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PolicyCreate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PolicyRow"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
+    "/policies/{policy_id}": {
+      "get": {
+        "tags": [
+          "policies"
+        ],
+        "summary": "Get Policy",
+        "operationId": "get_policy_policies__policy_id__get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "policy_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Policy Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PolicyRow"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "patch": {
+        "tags": [
+          "policies"
+        ],
+        "summary": "Update Policy",
+        "operationId": "update_policy_policies__policy_id__patch",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "policy_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Policy Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PolicyPatch"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PolicyRow"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "policies"
+        ],
+        "summary": "Delete Policy",
+        "operationId": "delete_policy_policies__policy_id__delete",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "policy_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Policy Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/policies/evaluate": {
+      "post": {
+        "tags": [
+          "policies"
+        ],
+        "summary": "Evaluate Policies",
+        "description": "Dry-run all enabled policies against a synthetic context.",
+        "operationId": "evaluate_policies_policies_evaluate_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EvaluateRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EvaluateResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
       }
     }
   },
@@ -1064,6 +1595,101 @@
         "title": "CategoryInfo",
         "description": "One row of the action taxonomy."
       },
+      "Condition": {
+        "properties": {
+          "all_of": {
+            "anyOf": [
+              {
+                "items": {
+                  "$ref": "#/components/schemas/Predicate"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "All Of"
+          },
+          "any_of": {
+            "anyOf": [
+              {
+                "items": {
+                  "$ref": "#/components/schemas/Predicate"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Any Of"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "title": "Condition",
+        "description": "Top-level: exactly one of ``all_of`` (AND) or ``any_of`` (OR)."
+      },
+      "EvaluateRequest": {
+        "properties": {
+          "skill": {
+            "type": "string",
+            "maxLength": 128,
+            "minLength": 1,
+            "title": "Skill"
+          },
+          "role": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 32
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Role"
+          },
+          "signals": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Signals"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "skill"
+        ],
+        "title": "EvaluateRequest",
+        "description": "Dry-run all enabled policies against a synthetic context.\n\nUsed by the UI to preview \"what would happen if temperature = 35 and\nkids_detected = true and role = guest tries to call relative_move?\"."
+      },
+      "EvaluateResponse": {
+        "properties": {
+          "decision": {
+            "type": "string",
+            "enum": [
+              "allow",
+              "deny"
+            ],
+            "title": "Decision"
+          },
+          "matched": {
+            "items": {
+              "$ref": "#/components/schemas/PolicyMatch"
+            },
+            "type": "array",
+            "title": "Matched"
+          }
+        },
+        "type": "object",
+        "required": [
+          "decision",
+          "matched"
+        ],
+        "title": "EvaluateResponse"
+      },
       "HTTPValidationError": {
         "properties": {
           "detail": {
@@ -1076,6 +1702,29 @@
         },
         "type": "object",
         "title": "HTTPValidationError"
+      },
+      "LoginResponse": {
+        "properties": {
+          "access_token": {
+            "type": "string",
+            "title": "Access Token"
+          },
+          "token_type": {
+            "type": "string",
+            "title": "Token Type",
+            "default": "bearer"
+          },
+          "user": {
+            "$ref": "#/components/schemas/UserAuth"
+          }
+        },
+        "type": "object",
+        "required": [
+          "access_token",
+          "user"
+        ],
+        "title": "LoginResponse",
+        "description": "Login returns the token plus the user in one round-trip."
       },
       "McpToolListResponse": {
         "properties": {
@@ -1189,6 +1838,323 @@
         ],
         "title": "McpToolRow",
         "description": "One row of the catalog, annotated with taxonomy info."
+      },
+      "PolicyCreate": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "maxLength": 64,
+            "minLength": 1,
+            "title": "Name"
+          },
+          "description": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 512
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Description"
+          },
+          "enabled": {
+            "type": "boolean",
+            "title": "Enabled",
+            "default": true
+          },
+          "scope_kind": {
+            "type": "string",
+            "enum": [
+              "all",
+              "categories",
+              "skills"
+            ],
+            "title": "Scope Kind"
+          },
+          "scope_values": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "maxItems": 64,
+            "title": "Scope Values"
+          },
+          "applies_to_roles": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "maxItems": 32,
+            "title": "Applies To Roles"
+          },
+          "condition": {
+            "$ref": "#/components/schemas/Condition"
+          },
+          "message": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 512
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Message"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "name",
+          "scope_kind",
+          "condition"
+        ],
+        "title": "PolicyCreate"
+      },
+      "PolicyMatch": {
+        "properties": {
+          "policy_id": {
+            "type": "integer",
+            "title": "Policy Id"
+          },
+          "policy_name": {
+            "type": "string",
+            "title": "Policy Name"
+          },
+          "message": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Message"
+          }
+        },
+        "type": "object",
+        "required": [
+          "policy_id",
+          "policy_name"
+        ],
+        "title": "PolicyMatch"
+      },
+      "PolicyPatch": {
+        "properties": {
+          "description": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 512
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Description"
+          },
+          "enabled": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Enabled"
+          },
+          "scope_kind": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "all",
+                  "categories",
+                  "skills"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Scope Kind"
+          },
+          "scope_values": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Scope Values"
+          },
+          "applies_to_roles": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Applies To Roles"
+          },
+          "condition": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Condition"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "message": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 512
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Message"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "title": "PolicyPatch",
+        "description": "All fields optional. Only provided fields are updated."
+      },
+      "PolicyRow": {
+        "properties": {
+          "id": {
+            "type": "integer",
+            "title": "Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "description": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Description"
+          },
+          "enabled": {
+            "type": "boolean",
+            "title": "Enabled"
+          },
+          "scope_kind": {
+            "type": "string",
+            "title": "Scope Kind"
+          },
+          "scope_values": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Scope Values"
+          },
+          "applies_to_roles": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Applies To Roles"
+          },
+          "condition": {
+            "$ref": "#/components/schemas/Condition"
+          },
+          "message": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Message"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Updated At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "name",
+          "enabled",
+          "scope_kind",
+          "scope_values",
+          "applies_to_roles",
+          "condition",
+          "created_at",
+          "updated_at"
+        ],
+        "title": "PolicyRow"
+      },
+      "Predicate": {
+        "properties": {
+          "signal": {
+            "type": "string",
+            "title": "Signal"
+          },
+          "op": {
+            "type": "string",
+            "enum": [
+              "==",
+              "!=",
+              "<",
+              "<=",
+              ">",
+              ">=",
+              "in",
+              "not_in"
+            ],
+            "title": "Op"
+          },
+          "value": {
+            "title": "Value"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "signal",
+          "op",
+          "value"
+        ],
+        "title": "Predicate",
+        "description": "One leaf condition: ``<signal> <op> <value>``."
       },
       "Recipe": {
         "properties": {
@@ -1420,6 +2386,86 @@
         ],
         "title": "RuntimeInfo"
       },
+      "SignalCatalogResponse": {
+        "properties": {
+          "signals": {
+            "items": {
+              "$ref": "#/components/schemas/SignalInfo"
+            },
+            "type": "array",
+            "title": "Signals"
+          },
+          "operators": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Operators"
+          }
+        },
+        "type": "object",
+        "required": [
+          "signals",
+          "operators"
+        ],
+        "title": "SignalCatalogResponse"
+      },
+      "SignalInfo": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "kind": {
+            "type": "string",
+            "title": "Kind"
+          },
+          "source": {
+            "type": "string",
+            "title": "Source"
+          },
+          "description": {
+            "type": "string",
+            "title": "Description"
+          },
+          "unit": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Unit"
+          },
+          "enum_values": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Enum Values"
+          },
+          "default_when_missing": {
+            "title": "Default When Missing"
+          }
+        },
+        "type": "object",
+        "required": [
+          "name",
+          "kind",
+          "source",
+          "description"
+        ],
+        "title": "SignalInfo"
+      },
       "SyncResponse": {
         "properties": {
           "upserted": {
@@ -1481,6 +2527,42 @@
         ],
         "title": "TaxonomyResponse"
       },
+      "UserAuth": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "email": {
+            "type": "string",
+            "format": "email",
+            "title": "Email"
+          },
+          "username": {
+            "type": "string",
+            "title": "Username"
+          },
+          "full_name": {
+            "type": "string",
+            "title": "Full Name"
+          },
+          "role": {
+            "type": "string",
+            "title": "Role"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "email",
+          "username",
+          "full_name",
+          "role"
+        ],
+        "title": "UserAuth",
+        "description": "The currently-authenticated user, as returned to the frontend."
+      },
       "UserCreate": {
         "properties": {
           "username": {
@@ -1500,6 +2582,17 @@
             "maxLength": 32,
             "minLength": 1,
             "title": "Role"
+          },
+          "email": {
+            "type": "string",
+            "format": "email",
+            "title": "Email"
+          },
+          "password": {
+            "type": "string",
+            "maxLength": 128,
+            "minLength": 8,
+            "title": "Password"
           }
         },
         "additionalProperties": false,
@@ -1507,10 +2600,33 @@
         "required": [
           "username",
           "full_name",
-          "role"
+          "role",
+          "email",
+          "password"
         ],
         "title": "UserCreate",
-        "description": "Body for `POST /users` (no face image \u2014 that's a separate upload)."
+        "description": "Body for `POST /users` (no face image \u2014 that's a separate upload).\n\nThe users table is also used for auth, so email + password are required.\nPrefer ``POST /auth/signup`` for self-service registration; this admin\nendpoint exists for operators creating users with a specific role."
+      },
+      "UserLogin": {
+        "properties": {
+          "email": {
+            "type": "string",
+            "format": "email",
+            "title": "Email"
+          },
+          "password": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Password"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "email",
+          "password"
+        ],
+        "title": "UserLogin"
       },
       "UserPatch": {
         "properties": {
@@ -1586,6 +2702,36 @@
         "title": "UserRow",
         "description": "A persisted user as returned by the REST surface.\n\n`face_embedding` is intentionally omitted: it's potentially large and\nonly meaningful to the dimos side. Use `has_face` instead."
       },
+      "UserSignup": {
+        "properties": {
+          "email": {
+            "type": "string",
+            "format": "email",
+            "title": "Email"
+          },
+          "password": {
+            "type": "string",
+            "maxLength": 128,
+            "minLength": 8,
+            "title": "Password"
+          },
+          "full_name": {
+            "type": "string",
+            "maxLength": 128,
+            "minLength": 1,
+            "title": "Full Name"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "email",
+          "password",
+          "full_name"
+        ],
+        "title": "UserSignup",
+        "description": "Body for `POST /auth/signup`.\n\n`username` and `role` are auto-derived by the service:\n- ``username`` = email local-part (lower-cased, with a suffix if taken)\n- ``role`` = ``\"guest\"`` (least-privileged seed role)"
+      },
       "ValidationError": {
         "properties": {
           "loc": {
@@ -1618,6 +2764,12 @@
           "type"
         ],
         "title": "ValidationError"
+      }
+    },
+    "securitySchemes": {
+      "HTTPBearer": {
+        "type": "http",
+        "scheme": "bearer"
       }
     }
   },

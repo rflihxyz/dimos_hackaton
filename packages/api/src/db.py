@@ -52,6 +52,7 @@ async def init_db() -> None:
     """Create app-owned tables and seed canonical RBAC roles. Idempotent."""
     # Import models so they register on Base.metadata.
     from src.mcp_tools import db_models as _mcp_tools_db_models  # noqa: F401
+    from src.policies import db_models as _policies_db_models  # noqa: F401
     from src.recipes import db_models  # noqa: F401
 
     async with engine.begin() as conn:

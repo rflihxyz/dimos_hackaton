@@ -25,6 +25,8 @@ import {
 } from "@/lib/api";
 
 const USERNAME_RE = /^[a-z0-9_]{1,32}$/;
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const MIN_PASSWORD_LEN = 8;
 
 export default function NewUserPage() {
   const router = useRouter();
@@ -35,6 +37,8 @@ export default function NewUserPage() {
 
   const [username, setUsername] = useState("");
   const [fullName, setFullName] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [role, setRole] = useState<string>("");
   const [face, setFace] = useState<Blob | null>(null);
   const [submitting, setSubmitting] = useState(false);
@@ -67,8 +71,15 @@ export default function NewUserPage() {
   const selectedRole = roles?.find((r) => r.name === role) ?? null;
 
   const usernameOk = USERNAME_RE.test(username);
+  const emailOk = EMAIL_RE.test(email);
+  const passwordOk = password.length >= MIN_PASSWORD_LEN;
   const formOk =
-    usernameOk && fullName.trim().length > 0 && role && !submitting;
+    usernameOk &&
+    fullName.trim().length > 0 &&
+    emailOk &&
+    passwordOk &&
+    role &&
+    !submitting;
 
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -80,6 +91,8 @@ export default function NewUserPage() {
         username,
         full_name: fullName.trim(),
         role,
+        email: email.trim().toLowerCase(),
+        password,
       });
 
       if (face) {
@@ -160,6 +173,44 @@ export default function NewUserPage() {
                 placeholder="Alice Smith"
                 disabled={submitting}
               />
+            </div>
+
+            <div className="space-y-1.5">
+              <Label htmlFor="email">Email</Label>
+              <Input
+                id="email"
+                type="email"
+                autoComplete="off"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="alice@example.com"
+                disabled={submitting}
+                aria-invalid={email.length > 0 && !emailOk}
+              />
+              {email.length > 0 && !emailOk && (
+                <p className="text-xs text-destructive">
+                  Enter a valid email address.
+                </p>
+              )}
+            </div>
+
+            <div className="space-y-1.5">
+              <Label htmlFor="password">Password</Label>
+              <Input
+                id="password"
+                type="password"
+                autoComplete="new-password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder={`At least ${MIN_PASSWORD_LEN} characters`}
+                disabled={submitting}
+                aria-invalid={password.length > 0 && !passwordOk}
+              />
+              {password.length > 0 && !passwordOk && (
+                <p className="text-xs text-destructive">
+                  Password must be at least {MIN_PASSWORD_LEN} characters.
+                </p>
+              )}
             </div>
           </CardContent>
         </Card>

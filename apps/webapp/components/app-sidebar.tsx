@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Bot, Shield, Users } from "lucide-react";
+import { Bot, ShieldAlert, Shield, Users } from "lucide-react";
 
 import {
   Sidebar,
@@ -29,6 +29,12 @@ const navItems = [
     href: "/roles",
     icon: Shield,
     isActive: (pathname: string) => pathname.startsWith("/roles"),
+  },
+  {
+    title: "Policies",
+    href: "/policies",
+    icon: ShieldAlert,
+    isActive: (pathname: string) => pathname.startsWith("/policies"),
   },
 ] as const;
 

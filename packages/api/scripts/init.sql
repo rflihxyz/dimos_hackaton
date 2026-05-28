@@ -23,7 +23,17 @@ CREATE TABLE IF NOT EXISTS roles (
 );
 
 CREATE TABLE IF NOT EXISTS users (
-    username       TEXT PRIMARY KEY,
+    -- Stable internal identifier used by JWT (sub claim is email, but
+    -- `user_id` claim references this column so renames don't break tokens).
+    id             UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    -- Login identity. Unique + lower-cased by the API layer before insert.
+    email          TEXT NOT NULL UNIQUE,
+    -- Bcrypt-hashed password (60-char fixed). Set by /auth/signup.
+    password       TEXT NOT NULL,
+    -- Legacy / RBAC handle. Used by /users/{username}/face and friends.
+    -- Auto-derived from the email local-part on signup; can collide so we
+    -- still enforce uniqueness here.
+    username       TEXT NOT NULL UNIQUE,
     full_name      TEXT NOT NULL,
     role           TEXT NOT NULL REFERENCES roles(name) ON UPDATE CASCADE,
     -- Single canonical face embedding (centroid of enrolled samples).
@@ -34,6 +44,7 @@ CREATE TABLE IF NOT EXISTS users (
 );
 
 CREATE INDEX IF NOT EXISTS users_role_idx ON users (role);
+CREATE INDEX IF NOT EXISTS users_email_idx ON users (email);
 
 -- Seed roles are upserted from Python on startup (see SEED_ROLES in
 -- src/rbac/taxonomy.py) so editing the taxonomy doesn't require dropping

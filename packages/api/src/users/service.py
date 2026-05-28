@@ -1,10 +1,11 @@
 """Async DB operations for the RBAC `users` table."""
 from __future__ import annotations
 
-from sqlalchemy import delete, select
+from sqlalchemy import delete, select, or_
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from src.auth.jwt import hash_password
 from src.rbac.db_models import User
 from src.users import storage
 from src.users.models import UserCreate, UserPatch, UserRow
@@ -39,13 +40,23 @@ async def get_user(session: AsyncSession, username: str) -> UserRow | None:
 
 async def create_user(session: AsyncSession, body: UserCreate) -> UserRow:
     """Insert a user. Raises ValueError on conflict or unknown role."""
+    email = body.email.lower()
     existing = (
-        await session.execute(select(User).where(User.username == body.username))
+        await session.execute(
+            select(User).where(or_(User.username == body.username, User.email == email))
+        )
     ).scalar_one_or_none()
     if existing is not None:
-        raise ValueError(f"User {body.username!r} already exists")
+        kind = "username" if existing.username == body.username else "email"
+        raise ValueError(f"User with this {kind} already exists")
 
-    row = User(username=body.username, full_name=body.full_name, role=body.role)
+    row = User(
+        username=body.username,
+        full_name=body.full_name,
+        role=body.role,
+        email=email,
+        password=hash_password(body.password),
+    )
     session.add(row)
     try:
         await session.commit()

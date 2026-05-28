@@ -4,7 +4,7 @@ import os
 from contextlib import asynccontextmanager
 
 import uvicorn
-from fastapi import FastAPI
+from fastapi import Depends, FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.security import HTTPBearer
 from fastapi_pagination import add_pagination
@@ -126,20 +126,31 @@ def refresh_openapi():
 
 
 from src.agents.router import router as agents_router
+from src.auth.jwt import get_current_user
+from src.auth.router import router as auth_router
 from src.mcp_tools.router import router as mcp_tools_router
+from src.policies.router import router as policies_router
 from src.rbac.router import router as rbac_router
 from src.recipes.router import router as recipes_router
 from src.roles.router import router as roles_router
 from src.runtime.router import router as runtime_router
 from src.users.router import router as users_router
 
-app.include_router(recipes_router)
-app.include_router(runtime_router)
-app.include_router(agents_router)
-app.include_router(mcp_tools_router)
-app.include_router(rbac_router)
-app.include_router(roles_router)
-app.include_router(users_router)
+# /auth/* is the entry point; signup + login are public, and /auth/me
+# guards itself via Depends(get_current_user).
+app.include_router(auth_router)
+
+# Everything else requires a valid bearer token. Adding the dependency
+# at include time avoids touching each router individually.
+_auth_required = [Depends(get_current_user)]
+app.include_router(recipes_router, dependencies=_auth_required)
+app.include_router(runtime_router, dependencies=_auth_required)
+app.include_router(agents_router, dependencies=_auth_required)
+app.include_router(mcp_tools_router, dependencies=_auth_required)
+app.include_router(rbac_router, dependencies=_auth_required)
+app.include_router(roles_router, dependencies=_auth_required)
+app.include_router(users_router, dependencies=_auth_required)
+app.include_router(policies_router, dependencies=_auth_required)
 
 
 if __name__ == "__main__":
